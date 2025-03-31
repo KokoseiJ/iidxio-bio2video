@@ -3,20 +3,25 @@ project(iidxio-bio2video VERSION 0.1
 			 LANGUAGES C
 )
 
-if(NOT EXISTS ./extern/libaio.dll)
-	message(FATAL_ERROR "extern/libaio.dll is missing!")
-elseif(NOT EXISTS ./extern/libaio-iob.dll)
-	message(FATAL_ERROR "extern/libaio-iob.dll is missing!")
-elseif(NOT EXISTS ./extern/libaio-iob2_video.dll)
-	message(FATAL_ERROR "extern/libaio-iob2_video.dll is missing!")
-endif()
+set(LIBAIO_DLLS "libaio" "libaio-iob" "libaio-iob2_video")
+
+foreach(DLLNAME IN LISTS LIBAIO_DLLS)
+	if (NOT EXISTS ${CMAKE_SOURCE_DIR}/extern/dlls/${DLLNAME}.dll)
+		message(FATAL_ERROR "extern/dlls/${DLLNAME} is missing!")
+	endif()
+endforeach()
+
+set(CMAKE_SHARED_LIBRARY_PREFIX "")
 
 include_directories(bemanitools/src/main)
 
-add_executable(bio2test src/main.c)
+add_library(iidxio-bi2x SHARED src/iidxio.c)
 
-target_link_libraries(bio2test ./extern/libaio.dll
-	                       ./extern/libaio-iob.dll
-			       ./extern/libaio-iob2_video.dll
-)
+foreach(DLLNAME IN LISTS LIBAIO_DLLS)
+	target_link_libraries(iidxio-bi2x ${CMAKE_SOURCE_DIR}/extern/dlls/${DLLNAME}.dll)
+	add_custom_command(TARGET iidxio-bi2x POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/extern/dlls/${DLLNAME}.dll ${CMAKE_BINARY_DIR}
+		COMMENT "Created ${CMAKE_BINARY_DIR}/${DLLNAME}.dll"
+	)
+endforeach()
 
