@@ -36,8 +36,8 @@ bool iidx_io_init(
     thread_destroy_t p_thread_destroy)
 {
 	thread_create = p_thread_create;
-	thread_join_t = p_thread_join;
-	thread_destroy_t = p_thread_destroy;
+	thread_join = p_thread_join;
+	thread_destroy = p_thread_destroy;
 
 	info(MODULE, "Hello, World!");
 

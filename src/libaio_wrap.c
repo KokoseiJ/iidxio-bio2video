@@ -1,7 +1,7 @@
 #include "libaio_wrap.h"
 
 void *init_bio2() {
-	void *sciUsbCdc, *aioNMgrIob2, *Bi2xTdj;
+	void *sciUsbCdc, *aioNMgrIob2, *bi2xTdj;
 	aioNMgrIob_BeginManage_t aioNMgrIob_BeginManage;
 
 	sciUsbCdc = aioIob2Bi2x_OpenSciUsbCdc(0);
