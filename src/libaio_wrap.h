@@ -6,6 +6,7 @@
 #include "libaio-iob2_video.h"
 
 void *init_bio2();
+bool write_firm();
 
 #endif
 
