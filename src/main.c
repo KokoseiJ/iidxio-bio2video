@@ -14,9 +14,9 @@ int main() {
 
 	printf("[*] Initializing Bi2x...\n");
 
-	void *bi2x = init_bio2();
+	void *bi2x = init_bi2x();
 	if (!bi2x) {
-		printf("[!] Failed to initialize bio2!\n");
+		printf("[!] Failed to initialize bi2x!\n");
 		return 1;
 	}
 

@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <windows.h>
 
-void *init_bio2() {
+void *init_bi2x() {
 	void *sciUsbCdc, *aioNMgrIob2, *bi2xTdj;
 	aioNMgrIob_BeginManage_t aioNMgrIob_BeginManage;
 

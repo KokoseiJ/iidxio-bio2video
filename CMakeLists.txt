@@ -24,6 +24,6 @@ target_link_libraries(libaio_wrap ${CMAKE_SOURCE_DIR}/extern/dlls/libaio.dll
 add_library(iidxio-bi2x SHARED src/iidxio.c)
 target_link_libraries(iidxio-bi2x libaio_wrap)
 
-add_executable(bio2test src/main.c)
-target_link_libraries(bio2test libaio_wrap)
+add_executable(bi2xtest src/main.c)
+target_link_libraries(bi2xtest libaio_wrap)
 

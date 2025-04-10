@@ -41,7 +41,7 @@ bool iidx_io_init(
 
 	info(MODULE, "Hello, World!");
 
-	bi2x = init_bio2();
+	bi2x = init_bi2x();
 	if (!bi2x) {
 		fatal(MODULE, "Failed to initialize BI2X");
 		return false;

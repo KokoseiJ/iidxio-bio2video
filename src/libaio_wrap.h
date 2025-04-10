@@ -5,7 +5,7 @@
 #include "libaio-iob.h"
 #include "libaio-iob2_video.h"
 
-void *init_bio2();
+void *init_bi2x();
 bool write_firm();
 
 #endif
