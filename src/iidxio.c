@@ -1,10 +1,13 @@
+#include "bi2x_tdj.h"
 #include "libaio_wrap.h"
 #include "bemanitools/glue.h"
 #include "bemanitools/iidxio.h"
+#include <windows.h>
 #include <stdbool.h>
 #include <stdint.h>
 
 #define MODULE "iidxio-bio2video"
+#define BI2X_TIMEOUT 10000
 
 log_formatter_t misc, info, warning, fatal;
 
@@ -13,8 +16,7 @@ thread_join_t thread_join;
 thread_destroy_t thread_destroy;
 
 void *bi2x = NULL;
-
-uint8_t bi2x_inputBuffer[202];
+struct tdj_status bi2x_status;
 
 void iidx_io_set_loggers(
     log_formatter_t p_misc,
@@ -35,6 +37,8 @@ bool iidx_io_init(
     thread_join_t p_thread_join,
     thread_destroy_t p_thread_destroy)
 {
+	unsigned int start_time;
+
 	thread_create = p_thread_create;
 	thread_join = p_thread_join;
 	thread_destroy = p_thread_destroy;
@@ -43,11 +47,30 @@ bool iidx_io_init(
 
 	bi2x = init_bi2x();
 	if (!bi2x) {
-		fatal(MODULE, "Failed to initialize BI2X");
+		fatal(MODULE, "Failed to initialize BI2X!");
 		return false;
 	}
 
-	info(MODULE, "BI2X device initialized");
+	info(MODULE, "BI2X object created, trying writefirm...");
+
+	if (!write_firm()) {
+		fatal(MODULE, "Failed to write firmware!");
+		return false;
+	}
+
+	info(MODULE, "Waiting for BI2X to come online...");
+
+	start_time = GetTickCount();
+	while (!bi2x_status.is_online) {
+		if (GetTickCount() - start_time > BI2X_TIMEOUT) {
+			fatal(MODULE, "BI2X Timeout!");
+			return false;
+		}
+		iidx_io_ep2_recv();
+		Sleep(1);
+	}
+
+	info(MODULE, "BI2X device initialized.");
 	return true;
 }
 
@@ -123,7 +146,7 @@ bool iidx_io_ep1_send(void) {
    IO error screen. */
 
 bool iidx_io_ep2_recv(void) {
-	aioIob2Bi2xTDJ_GetDeviceStatus(bi2x, bi2x_inputBuffer, sizeof(bi2x_inputBuffer));
+	aioIob2Bi2xTDJ_GetDeviceStatus(bi2x, &bi2x_status, sizeof(bi2x_status));
 	return true;
 }
 
@@ -131,7 +154,7 @@ bool iidx_io_ep2_recv(void) {
    player_no is either 0 or 1. */
 
 uint8_t iidx_io_ep2_get_turntable(uint8_t player_no) {
-	return 69;
+	return (player_no == 0) ? bi2x_status.p1_tt : bi2x_status.p2_tt;
 }
 
 /* Get slider position, where 0 is the bottom position and 15 is the topmost
@@ -145,19 +168,37 @@ uint8_t iidx_io_ep2_get_slider(uint8_t slider_no) {
 /* Get the state of the system buttons. See enums above. */
 
 uint8_t iidx_io_ep2_get_sys(void) {
-	return 0;
+	return bi2x_status.test		<< IIDX_IO_SYS_TEST		&
+		   bi2x_status.service	<< IIDX_IO_SYS_SERVICE	&
+		   bi2x_status.coin		<< IIDX_IO_SYS_COIN		;
 }
 
 /* Get the state of the panel buttons. See enums above. */
 
 uint8_t iidx_io_ep2_get_panel(void) {
-	return 0;
+	return bi2x_status.p1_start	<< IIDX_IO_PANEL_P1_START	&
+		   bi2x_status.p2_start	<< IIDX_IO_PANEL_P2_START	&
+		   bi2x_status.vefx		<< IIDX_IO_PANEL_VEFX		&
+		   bi2x_status.effect	<< IIDX_IO_PANEL_EFFECT		;
 }
 
 /* Get the state of the 14 key buttons. See enums above. */
 
 uint16_t iidx_io_ep2_get_keys(void) {
-	return 0;
+	return bi2x_status.p1_1 << IIDX_IO_KEY_P1_1 &
+		   bi2x_status.p1_2 << IIDX_IO_KEY_P1_2 &
+		   bi2x_status.p1_3 << IIDX_IO_KEY_P1_3 &
+		   bi2x_status.p1_4 << IIDX_IO_KEY_P1_4 &
+		   bi2x_status.p1_5 << IIDX_IO_KEY_P1_5 &
+		   bi2x_status.p1_6 << IIDX_IO_KEY_P1_6 &
+		   bi2x_status.p1_7 << IIDX_IO_KEY_P1_7 &
+		   bi2x_status.p2_1 << IIDX_IO_KEY_P2_1 &
+		   bi2x_status.p2_2 << IIDX_IO_KEY_P2_2 &
+		   bi2x_status.p2_3 << IIDX_IO_KEY_P2_3 &
+		   bi2x_status.p2_4 << IIDX_IO_KEY_P2_4 &
+		   bi2x_status.p2_5 << IIDX_IO_KEY_P2_5 &
+		   bi2x_status.p2_6 << IIDX_IO_KEY_P2_6 &
+		   bi2x_status.p2_7 << IIDX_IO_KEY_P2_7 ;
 }
 
 /* Write a nine-character string to the 16-segment display. This happens on a

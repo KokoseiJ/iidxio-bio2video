@@ -6,7 +6,7 @@
 #include <conio.h>
 #include <windows.h>
 
-#define BI2X_TIMEOUT 10
+#define BI2X_TIMEOUT 10000
 
 int main() {
 	struct tdj_status buffer = {0,};
@@ -30,7 +30,7 @@ int main() {
 	printf("[*] Waiting for bi2x to come online");
 	start_time = GetTickCount();
 	while (!buffer.is_online) {
-		if (GetTickCount() - start_time > BI2X_TIMEOUT * 1000) {
+		if (GetTickCount() - start_time > BI2X_TIMEOUT) {
 			printf("\n[!] Bi2x timeout!\n");
 			return 1;
 		}
@@ -51,7 +51,7 @@ int main() {
 
 		printf("sq %d ot %d os %d oc %d 1s %d 2s %d ee %d ev %d 1t %d 2t %d p1 %d%d%d%d%d%d%d p2 %d%d%d%d%d%d%d\n",
 			buffer.seq1, buffer.test, buffer.service, buffer.coin, buffer.p1_start, buffer.p2_start,
-			buffer.effects, buffer.vefx, buffer.p1_tt, buffer.p2_tt,
+			buffer.effect, buffer.vefx, buffer.p1_tt, buffer.p2_tt,
 			buffer.p1_1, buffer.p1_2, buffer.p1_3, buffer.p1_4, buffer.p1_5, buffer.p1_6, buffer.p1_7,
 			buffer.p2_1, buffer.p2_2, buffer.p2_3, buffer.p2_4, buffer.p2_5, buffer.p2_6, buffer.p2_7
 		);

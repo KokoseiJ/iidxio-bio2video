@@ -14,7 +14,7 @@ struct tdj_status {
 	uint8_t unk07;
 	uint8_t p1_start;
 	uint8_t p2_start;
-	uint8_t effects;
+	uint8_t effect;
 	uint8_t vefx;
 	uint8_t unk12[8];
 	uint8_t p1_tt;
