@@ -6,7 +6,7 @@
 #include <conio.h>
 #include <windows.h>
 
-#define BI2X_TIMEOUT 10000
+#define BI2X_TIMEOUT 30000
 
 int main() {
 	struct tdj_status buffer = {0,};

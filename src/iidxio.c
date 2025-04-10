@@ -7,7 +7,7 @@
 #include <stdint.h>
 
 #define MODULE "iidxio-bio2video"
-#define BI2X_TIMEOUT 10000
+#define BI2X_TIMEOUT 30000
 
 log_formatter_t misc, info, warning, fatal;
 
@@ -66,6 +66,7 @@ bool iidx_io_init(
 			fatal(MODULE, "BI2X Timeout!");
 			return false;
 		}
+		iidx_io_ep1_send();
 		iidx_io_ep2_recv();
 		Sleep(1);
 	}
@@ -88,7 +89,7 @@ void iidx_io_ep1_set_deck_lights(uint16_t deck_lights) {
 		for (button_idx=0; button_idx<7; button_idx++) {
 			aioIob2Bi2xTDJ_SetPlayerButtonLamp(
 				bi2x, player_side, button_idx,
-				deck_lights >> (player_side * 8 + button_idx) & 1
+				deck_lights >> (player_side * 7 + button_idx) & 1
 			);
 		}
 	}
@@ -168,37 +169,37 @@ uint8_t iidx_io_ep2_get_slider(uint8_t slider_no) {
 /* Get the state of the system buttons. See enums above. */
 
 uint8_t iidx_io_ep2_get_sys(void) {
-	return bi2x_status.test		<< IIDX_IO_SYS_TEST		&
-		   bi2x_status.service	<< IIDX_IO_SYS_SERVICE	&
-		   bi2x_status.coin		<< IIDX_IO_SYS_COIN		;
+	return	bi2x_status.test	<< IIDX_IO_SYS_TEST	|
+		bi2x_status.service	<< IIDX_IO_SYS_SERVICE	|
+		bi2x_status.coin	<< IIDX_IO_SYS_COIN	;
 }
 
 /* Get the state of the panel buttons. See enums above. */
 
 uint8_t iidx_io_ep2_get_panel(void) {
-	return bi2x_status.p1_start	<< IIDX_IO_PANEL_P1_START	&
-		   bi2x_status.p2_start	<< IIDX_IO_PANEL_P2_START	&
-		   bi2x_status.vefx		<< IIDX_IO_PANEL_VEFX		&
-		   bi2x_status.effect	<< IIDX_IO_PANEL_EFFECT		;
+	return	bi2x_status.p1_start	<< IIDX_IO_PANEL_P1_START	|
+		bi2x_status.p2_start	<< IIDX_IO_PANEL_P2_START	|
+		bi2x_status.vefx	<< IIDX_IO_PANEL_VEFX		|
+		bi2x_status.effect	<< IIDX_IO_PANEL_EFFECT		;
 }
 
 /* Get the state of the 14 key buttons. See enums above. */
 
 uint16_t iidx_io_ep2_get_keys(void) {
-	return bi2x_status.p1_1 << IIDX_IO_KEY_P1_1 &
-		   bi2x_status.p1_2 << IIDX_IO_KEY_P1_2 &
-		   bi2x_status.p1_3 << IIDX_IO_KEY_P1_3 &
-		   bi2x_status.p1_4 << IIDX_IO_KEY_P1_4 &
-		   bi2x_status.p1_5 << IIDX_IO_KEY_P1_5 &
-		   bi2x_status.p1_6 << IIDX_IO_KEY_P1_6 &
-		   bi2x_status.p1_7 << IIDX_IO_KEY_P1_7 &
-		   bi2x_status.p2_1 << IIDX_IO_KEY_P2_1 &
-		   bi2x_status.p2_2 << IIDX_IO_KEY_P2_2 &
-		   bi2x_status.p2_3 << IIDX_IO_KEY_P2_3 &
-		   bi2x_status.p2_4 << IIDX_IO_KEY_P2_4 &
-		   bi2x_status.p2_5 << IIDX_IO_KEY_P2_5 &
-		   bi2x_status.p2_6 << IIDX_IO_KEY_P2_6 &
-		   bi2x_status.p2_7 << IIDX_IO_KEY_P2_7 ;
+	return	bi2x_status.p1_1 << IIDX_IO_KEY_P1_1 |
+		bi2x_status.p1_2 << IIDX_IO_KEY_P1_2 |
+		bi2x_status.p1_3 << IIDX_IO_KEY_P1_3 |
+		bi2x_status.p1_4 << IIDX_IO_KEY_P1_4 |
+		bi2x_status.p1_5 << IIDX_IO_KEY_P1_5 |
+		bi2x_status.p1_6 << IIDX_IO_KEY_P1_6 |
+		bi2x_status.p1_7 << IIDX_IO_KEY_P1_7 |
+		bi2x_status.p2_1 << IIDX_IO_KEY_P2_1 |
+		bi2x_status.p2_2 << IIDX_IO_KEY_P2_2 |
+		bi2x_status.p2_3 << IIDX_IO_KEY_P2_3 |
+		bi2x_status.p2_4 << IIDX_IO_KEY_P2_4 |
+		bi2x_status.p2_5 << IIDX_IO_KEY_P2_5 |
+		bi2x_status.p2_6 << IIDX_IO_KEY_P2_6 |
+		bi2x_status.p2_7 << IIDX_IO_KEY_P2_7 ;
 }
 
 /* Write a nine-character string to the 16-segment display. This happens on a
