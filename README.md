@@ -3,11 +3,13 @@ Implementation of Bemanitools iidxio API for BI2X IO boards.
 
 ## How do I use it?
 
-**bixtest**
+### bi2xtest
+
 Run the program, and the program will detect BI2X the same way a stock game would.
 You can then review the outputs from BI2X and verify the inputs.
 
-**iidxio-bi2x.dll**
+### iidxio-bi2x.dll
+
 Place `libacc.dll`, `libaio.dll`, `libaio-iob.dll` and `libaio-iob2_video.dll` along with `iidxio-bi2x.dll`.
 Rename `iidxio-bi2x.dll` to `iidxio.dll` and use it in place of Bemanitools-supplied `iidxio.dll`. No config should be required.
 
