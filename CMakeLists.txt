@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.30)
-project(iidxio-bio2video VERSION 0.1
+project(iidxio-bio2video VERSION 1.0
 			 LANGUAGES C
 )
 
@@ -11,8 +11,14 @@ elseif (NOT EXISTS ${CMAKE_SOURCE_DIR}/extern/dlls/libaio-iob2_video.dll)
 	message(FATAL_ERROR "extern/dlls/ is missing!")
 endif()
 
+if (DEBUG_BUILD)
+    add_compile_options(-g)
+else()
+    add_compile_options(-O2)
+endif()
+
 set(CMAKE_SHARED_LIBRARY_PREFIX "")
-add_compile_options(-g -Wall)
+add_compile_options(-Wall)
 
 include_directories(bemanitools/src/main)
 
