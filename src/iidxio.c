@@ -5,6 +5,8 @@
 #include <windows.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h> // Added for strtol
 
 #define MODULE "iidxio-bio2video"
 #define BI2X_TIMEOUT 30000
@@ -17,6 +19,62 @@ thread_destroy_t thread_destroy;
 
 void *bi2x = NULL;
 struct tdj_status bi2x_status;
+
+// --- LED INI Configuration variables ---
+uint32_t woofer_color = 0;
+uint32_t tt_p1_color = 0;
+uint32_t tt_p2_color = 0;
+uint32_t iccr_p1_color = 0;
+uint32_t iccr_p2_color = 0;
+uint32_t pillar_color = 0;
+
+// Helper to read hex values from the .ini
+static uint32_t read_hex_ini(const char* section, const char* key, uint32_t def_val, const char* file) {
+	char buf[32];
+	GetPrivateProfileStringA(section, key, "", buf, sizeof(buf), file);
+	if (buf[0] == '\0') return def_val;
+	return strtol(buf, NULL, 16);
+}
+
+// Load configurations from bio2video.ini
+static void load_led_config() {
+	const char* ini_path = ".\\bio2video.ini";
+	// Default values are provided as fallbacks if the file/key isn't found
+	woofer_color  = read_hex_ini("LED", "Woofer", 0xFFFFFF, ini_path);
+	tt_p1_color   = read_hex_ini("LED", "TTP1",   0xFFFFFF, ini_path);
+	tt_p2_color   = read_hex_ini("LED", "TTP2",   0xFFFFFF, ini_path);
+	iccr_p1_color = read_hex_ini("LED", "IccrP1", 0xFFFFFF, ini_path);
+	iccr_p2_color = read_hex_ini("LED", "IccrP2", 0xFFFFFF, ini_path);
+	pillar_color  = read_hex_ini("LED", "Pillar", 0xFFFFFF, ini_path);
+}
+
+// Push colors to the board
+static void apply_rgb_leds() {
+	uint8_t r, g, b;
+	uint32_t grb_data;
+	uint32_t i;
+
+	if (!bi2x) return;
+
+	aioIob2Bi2xTDJ_SetWooferLed(bi2x, woofer_color);
+	aioIob2Bi2xTDJ_SetTurnTableLed(bi2x, 0, tt_p1_color);
+	aioIob2Bi2xTDJ_SetTurnTableLed(bi2x, 1, tt_p2_color);
+	aioIob2Bi2xTDJ_SetIccrLed(bi2x, 0, iccr_p1_color);
+	aioIob2Bi2xTDJ_SetIccrLed(bi2x, 1, iccr_p2_color);
+
+	// Pillar (Tape) LEDs are WS2812 and expect GRB ordering
+	r = (pillar_color >> 16) & 0xFF;
+	g = (pillar_color >> 8) & 0xFF;
+	b = pillar_color & 0xFF;
+	
+	grb_data = (g << 16) | (r << 8) | b;
+
+	// Broadcast the color to all 17 sections of the pillar
+	for (i = 0; i < 17; i++) {
+		aioIob2Bi2xTDJ_SetTapeLedData(bi2x, i, &grb_data);
+	}
+}
+// ---------------------------------------
 
 void iidx_io_set_loggers(
     log_formatter_t p_misc,
@@ -72,6 +130,11 @@ bool iidx_io_init(
 	}
 
 	info(MODULE, "BI2X device initialized.");
+
+	// --- Initialize LEDs ---
+	load_led_config();
+	apply_rgb_leds();
+
 	return true;
 }
 
@@ -210,4 +273,3 @@ bool iidx_io_ep3_write_16seg(const char *text) {
 	// STUB: guess what bi2x also doesn't have...
 	return true;
 }
-
